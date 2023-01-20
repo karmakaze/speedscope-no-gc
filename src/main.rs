@@ -76,14 +76,14 @@ fn main() {
     for profile in speedscope.profiles {
         println!("profile: {:?}..{:?}", profile.start_value, profile.end_value);
 
-        let mut profile_intervals: IntervalSet<usize> = vec![(0, 1)].to_interval_set();
+        let mut gc_intervals: IntervalSet<usize> = vec![].to_interval_set();
 
         let mut open_events: HashMap<usize, Event> = HashMap::new();
         for event in profile.events {
             match event.etype {
                 EType::O => {
                     let frame = &speedscope.shared.frames[event.frame];
-                    if !gc_names.contains(&frame.name) {
+                    if gc_names.contains(&frame.name) {
                         // println!("Insert event {:?}", &event);
                         open_events.insert(event.frame, event);
                     }
@@ -92,7 +92,7 @@ fn main() {
                     match open_events.remove(&event.frame) {
                         Some(open_event) => {
                             let interval = vec![(open_event.at, event.at)].to_interval_set();
-                            profile_intervals = profile_intervals.union(&interval);
+                            gc_intervals = gc_intervals.union(&interval);
                         },
                         _ => {
                             // println!("Did not find event 'O' for {:?}", event);
@@ -102,6 +102,6 @@ fn main() {
                 },
             }
         }
-        println!("intervals: {:?}", &profile_intervals);
+        println!("intervals: {:?}", &gc_intervals);
     }
 }
